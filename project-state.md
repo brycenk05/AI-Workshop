@@ -6,10 +6,11 @@ Last updated: 2026-10-01
 - A Supabase project exists and is linked to the repo.
 - Slice 1 (sign up and log in) is built on branch claude/jolly-archimedes-gm3e2u, PR open, not yet checked by Brycen on the preview link.
   - /signup and /signin pages; the home page shows "Signed in as <email>" with Sign out, or Sign in / Sign up links.
-  - Talks to Supabase Auth with plain fetch (app/lib/auth.ts). No Supabase package installed, because adding a dependency needs Brycen's OK.
-  - The session is kept in the browser's localStorage and refreshed when it expires.
+  - Uses the official Supabase packages @supabase/supabase-js and @supabase/ssr (Brycen approved both on 2026-10-01). Browser client is in app/lib/supabase.ts.
+  - The session is kept in cookies and refreshed by the Supabase library.
 
 ## Broken or flaky
+- npm audit reports 1 critical vulnerability in next 16.3.5 itself (fix is next 16.3.8). Not caused by this slice; upgrading next needs Brycen's OK.
 - npm run lint fails: the script is "next lint", which Next.js 16 no longer has. Fixing it needs ESLint added as a dependency, so it waits for Brycen.
 
 ## Environment notes
@@ -20,5 +21,4 @@ Last updated: 2026-10-01
 
 ## Next session
 - Brycen checks slice 1 on the preview link and merges.
-- Decide whether to install @supabase/supabase-js before slice 2 (tasks table needs database calls).
 - Then start slice 2: tasks that stay.

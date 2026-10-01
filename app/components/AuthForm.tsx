@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { signIn, signUp } from "../lib/auth";
+import { createClient } from "../lib/supabase";
 
 type Mode = "signin" | "signup";
 
@@ -26,14 +26,20 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     setSubmitting(true);
 
     try {
+      const supabase = createClient();
       if (isSignUp) {
-        const session = await signUp(email, password);
-        if (!session) {
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) throw error;
+        if (!data.session) {
           setNotice("Check your email to confirm your account, then sign in.");
           return;
         }
       } else {
-        await signIn(email, password);
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
       }
       router.push("/");
     } catch (err) {

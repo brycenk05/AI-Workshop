@@ -2,34 +2,35 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getSession, signOut, type Session } from "../lib/auth";
+import { createClient } from "../lib/supabase";
 
 // Shows who is signed in with a Sign out button, or Sign in / Sign up links.
 export default function AuthStatus() {
-  const [session, setSession] = useState<Session | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getSession().then((s) => {
-      setSession(s);
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setEmail(data.user?.email ?? null);
       setLoading(false);
     });
   }, []);
 
   async function handleSignOut() {
-    await signOut();
-    setSession(null);
+    await createClient().auth.signOut();
+    setEmail(null);
   }
 
   if (loading) {
     return <div className="auth-bar" aria-busy="true" />;
   }
 
-  if (session) {
+  if (email) {
     return (
       <div className="auth-bar">
         <span>
-          Signed in as <strong>{session.email}</strong>
+          Signed in as <strong>{email}</strong>
         </span>
         <button type="button" className="button" onClick={handleSignOut}>
           Sign out
