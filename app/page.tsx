@@ -1,8 +1,11 @@
+import AuthStatus from "./components/AuthStatus";
+
 export default function Home() {
   const year = new Date().getFullYear();
 
   return (
     <div className="page">
+      <AuthStatus />
       <header className="hero">
         <h1>Brycen Kano</h1>
         <p className="tagline">a senior at UH Manoa studying computer science.</p>
