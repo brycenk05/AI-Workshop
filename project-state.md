@@ -2,12 +2,11 @@
 Last updated: 2026-10-01
 
 ## Works
-- Next.js site (App Router, TypeScript, plain CSS) is deployed on Vercel at https://ai-workshop-eight-mauve.vercel.app/.
-- A Supabase project exists and is linked to the repo.
-- Slice 1 (sign up and log in) is built on branch claude/jolly-archimedes-gm3e2u, PR open, not yet checked by Brycen on the preview link.
-  - /signup and /signin pages; the home page shows "Signed in as <email>" with Sign out, or Sign in / Sign up links.
-  - Uses the official Supabase packages @supabase/supabase-js and @supabase/ssr (Brycen approved both on 2026-10-01). Browser client is in app/lib/supabase.ts.
-  - The session is kept in cookies and refreshed by the Supabase library.
+- The site is live at https://ai-workshop-eight-mauve.vercel.app/.
+- A person can create an account with an email and password on the Sign up page and is signed in straight away.
+- Once signed in, the home page shows "Signed in as" followed by their email, and it stays that way when they reload the page.
+- A person can click Sign out and see the Sign in and Sign up links again.
+- A person can sign back in on the Sign in page; a wrong password shows an error message and keeps them on that page.
 
 ## Broken or flaky
 - npm audit reports 1 critical vulnerability in next 16.3.5 itself (fix is next 16.3.8). Not caused by this slice; upgrading next needs Brycen's OK.
