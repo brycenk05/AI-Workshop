@@ -7,7 +7,9 @@ Last updated: 2026-10-14
 - Once signed in, the home page shows "Signed in as" followed by their email, and it stays that way when they reload the page.
 - A person can click Sign out and see the Sign in and Sign up links again.
 - A person can sign back in on the Sign in page; a wrong password shows an error message and keeps them on that page.
-- Slice 2 (in review, not yet checked by Brycen): signed-in people see a "My tasks" box on the home page, can add a task, and only ever see their own tasks.
+- Once signed in, a person sees a "My tasks" box on the home page, can type a task and click Add, and sees it appear in their list.
+- A person's tasks are still there after they sign out and sign back in.
+- A person only ever sees their own tasks; a different account starts with an empty list.
 
 ## Broken or flaky
 - npm audit reports 1 critical vulnerability in next 16.3.5 itself (fix is next 16.3.8). Not caused by this slice; upgrading next needs Brycen's OK.
