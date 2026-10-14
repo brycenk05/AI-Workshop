@@ -176,3 +176,33 @@ h3 {
   margin: 1rem 0 0;
   color: var(--muted);
 }
+
+/* Tasks */
+
+.tasks {
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.task-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.task-form input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.task-form + .form-error {
+  margin-bottom: 1rem;
+}
+
+.tasks-empty {
+  color: var(--muted);
+}
