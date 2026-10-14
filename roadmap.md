@@ -8,8 +8,8 @@ A stranger opens https://ai-workshop-eight-mauve.vercel.app/, creates an account
 
 ## Slices
 1. Sign up and log in | done-criteria: (a) On the live site, click Sign up, enter a new email and password, submit, follow the confirmation email if one arrives, and end up on a page that says "Signed in as" followed by that email. (b) Reload the page and still see "Signed in as" with that email. (c) Click Sign out and see Sign in and Sign up, with no email shown. (d) Sign in with that email and a wrong password and see an error message while staying on the sign-in page. | status: DONE
-2. Tasks that stay | done-criteria: (a) Signed in, type Buy fake groceries in the new-task box, click Add, and see it appear in the list. (b) Sign out, sign back in, and see Buy fake groceries still in the list. (c) Sign in as a second test account and see an empty list with none of the first account's tasks. | status: ACTIVE
-3. Shared course list | done-criteria: (a) On the new-task form, open the Course dropdown and see at least three fake courses, including FAKE 101. (b) Add a task with FAKE 101 selected and see "FAKE 101" next to it in the list. (c) Choose FAKE 101 in the course filter and see only FAKE 101 tasks; choose All and see every task again. (d) Sign in as the second test account, open the Course dropdown, and see the same courses. | status: pending
+2. Tasks that stay | done-criteria: (a) Signed in, type Buy fake groceries in the new-task box, click Add, and see it appear in the list. (b) Sign out, sign back in, and see Buy fake groceries still in the list. (c) Sign in as a second test account and see an empty list with none of the first account's tasks. | status: DONE
+3. Shared course list | done-criteria: (a) On the new-task form, open the Course dropdown and see at least three fake courses, including FAKE 101. (b) Add a task with FAKE 101 selected and see "FAKE 101" next to it in the list. (c) Choose FAKE 101 in the course filter and see only FAKE 101 tasks; choose All and see every task again. (d) Sign in as the second test account, open the Course dropdown, and see the same courses. | status: ACTIVE
 
 ## Backlog
 - Marking tasks complete
