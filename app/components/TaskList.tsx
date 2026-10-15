@@ -9,17 +9,59 @@ type Task = {
   created_at: string;
   due_date: string | null; // "YYYY-MM-DD", or null for tasks made before due dates existed
   done: boolean;
+  repeat: Repeat | null; // null means the task does not repeat
 };
 
-const TASK_COLUMNS = "id, title, created_at, due_date, done";
+// "weekly" repeats on the same weekday as the task's due date,
+// so a task due on a Monday repeats every Monday.
+type Repeat = "daily" | "weekly";
 
-// Today's date on this person's computer, as "YYYY-MM-DD" so it can be
-// compared directly with due_date from the database.
+const TASK_COLUMNS = "id, title, created_at, due_date, done, repeat";
+
+const WEEKDAYS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
+// A Date as "YYYY-MM-DD" in this person's time zone, the same shape as
+// due_date from the database, so the two can be compared directly.
+function toDateString(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
 function todayString(): string {
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  return `${now.getFullYear()}-${month}-${day}`;
+  return toDateString(new Date());
+}
+
+// "2026-10-16" -> a Date at midnight local time. Built from the parts so
+// the date does not shift a day because of time zones.
+function parseDate(dateString: string): Date {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+// What Done means for a repeating task: this time is finished, so the due
+// date moves to the next time it comes round that is after today. Missed
+// days are skipped rather than piling up.
+function nextDueDate(dueDate: string, repeat: Repeat, today: string): string {
+  const step = repeat === "daily" ? 1 : 7;
+  const next = parseDate(dueDate);
+  do {
+    next.setDate(next.getDate() + step);
+  } while (toDateString(next) <= today);
+  return toDateString(next);
+}
+
+function repeatLabel(repeat: Repeat, dueDate: string | null): string {
+  if (repeat === "daily") return "every day";
+  return dueDate ? `every ${WEEKDAYS[parseDate(dueDate).getDay()]}` : "every week";
 }
 
 // The overdue rule: the due date is before today and the task is not done.
@@ -28,11 +70,9 @@ function isOverdue(task: Task, today: string): boolean {
   return !task.done && task.due_date !== null && task.due_date < today;
 }
 
-// "2026-10-16" -> "Oct 16, 2026". Built from the parts so the date
-// does not shift a day because of time zones.
+// "2026-10-16" -> "Oct 16, 2026".
 function formatDueDate(dueDate: string): string {
-  const [year, month, day] = dueDate.split("-").map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString(undefined, {
+  return parseDate(dueDate).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -40,13 +80,14 @@ function formatDueDate(dueDate: string): string {
 }
 
 // The signed-in person's tasks, with a form to add one, a Done box, and a
-// Delete button. Row Level Security in Supabase makes sure each person
+// Delete button. Repeating tasks are listed first, in their own group. Row Level Security in Supabase makes sure each person
 // only gets, changes, and deletes their own rows.
 export default function TaskList() {
   const [signedIn, setSignedIn] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [repeat, setRepeat] = useState<Repeat | "">("");
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
 
@@ -90,7 +131,7 @@ export default function TaskList() {
     setAdding(true);
     const { data, error } = await createClient()
       .from("tasks")
-      .insert({ title: trimmed, due_date: dueDate })
+      .insert({ title: trimmed, due_date: dueDate, repeat: repeat || null })
       .select(TASK_COLUMNS)
       .single();
     setAdding(false);
@@ -102,15 +143,21 @@ export default function TaskList() {
     setTasks((current) => [...current, data]);
     setTitle("");
     setDueDate("");
+    setRepeat("");
   }
 
   async function handleToggleDone(task: Task) {
     setError(null);
+    // A repeating task never stays done: ticking it moves it to next time.
+    const change =
+      task.repeat && task.due_date && !task.done
+        ? { due_date: nextDueDate(task.due_date, task.repeat, todayString()) }
+        : { done: !task.done };
     // Asking for the changed row back means a change that Row Level
     // Security quietly blocks shows up as an error instead of nothing.
     const { data, error } = await createClient()
       .from("tasks")
-      .update({ done: !task.done })
+      .update(change)
       .eq("id", task.id)
       .select(TASK_COLUMNS)
       .single();
@@ -142,6 +189,44 @@ export default function TaskList() {
   if (!signedIn) return null;
 
   const today = todayString();
+  const repeating = tasks.filter((task) => task.repeat);
+  const oneOff = tasks.filter((task) => !task.repeat);
+
+  function renderTask(task: Task) {
+    const overdue = isOverdue(task, today);
+    const classes = ["task", overdue && "task-overdue", task.done && "task-done"]
+      .filter(Boolean)
+      .join(" ");
+    return (
+      <li key={task.id} className={classes}>
+        <label className="task-check">
+          <input
+            type="checkbox"
+            checked={task.done}
+            onChange={() => handleToggleDone(task)}
+          />
+          Done
+        </label>
+        <span className="task-title">{task.title}</span>
+        <span className="task-due">
+          {task.due_date ? `Due ${formatDueDate(task.due_date)}` : "No due date"}
+        </span>
+        {task.repeat && (
+          <span className="task-repeat">
+            Repeats {repeatLabel(task.repeat, task.due_date)}
+          </span>
+        )}
+        {overdue && <span className="task-overdue-label">Overdue</span>}
+        <button
+          type="button"
+          className="task-delete"
+          onClick={() => handleDelete(task)}
+        >
+          Delete
+        </button>
+      </li>
+    );
+  }
 
   return (
     <section className="section tasks">
@@ -162,6 +247,17 @@ export default function TaskList() {
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
         />
+        <select
+          aria-label="Repeat"
+          value={repeat}
+          onChange={(e) => setRepeat(e.target.value as Repeat | "")}
+        >
+          <option value="">Doesn&apos;t repeat</option>
+          <option value="daily">Every day</option>
+          <option value="weekly">
+            {dueDate ? `Every ${WEEKDAYS[parseDate(dueDate).getDay()]}` : "Every week"}
+          </option>
+        </select>
         <button type="submit" className="button" disabled={adding}>
           {adding ? "Adding…" : "Add"}
         </button>
@@ -171,41 +267,18 @@ export default function TaskList() {
           {error}
         </p>
       )}
-      {tasks.length === 0 ? (
-        <p className="tasks-empty">No tasks yet.</p>
-      ) : (
-        <ul className="task-list">
-          {tasks.map((task) => {
-            const overdue = isOverdue(task, today);
-            const classes = ["task", overdue && "task-overdue", task.done && "task-done"]
-              .filter(Boolean)
-              .join(" ");
-            return (
-              <li key={task.id} className={classes}>
-                <label className="task-check">
-                  <input
-                    type="checkbox"
-                    checked={task.done}
-                    onChange={() => handleToggleDone(task)}
-                  />
-                  Done
-                </label>
-                <span className="task-title">{task.title}</span>
-                <span className="task-due">
-                  {task.due_date ? `Due ${formatDueDate(task.due_date)}` : "No due date"}
-                </span>
-                {overdue && <span className="task-overdue-label">Overdue</span>}
-                <button
-                  type="button"
-                  className="task-delete"
-                  onClick={() => handleDelete(task)}
-                >
-                  Delete
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+      {tasks.length === 0 && <p className="tasks-empty">No tasks yet.</p>}
+      {repeating.length > 0 && (
+        <>
+          <h3 className="task-group">Repeating</h3>
+          <ul className="task-list">{repeating.map(renderTask)}</ul>
+        </>
+      )}
+      {oneOff.length > 0 && (
+        <>
+          {repeating.length > 0 && <h3 className="task-group">One-off</h3>}
+          <ul className="task-list">{oneOff.map(renderTask)}</ul>
+        </>
       )}
     </section>
   );
