@@ -191,12 +191,15 @@ h3 {
 }
 
 .task-form input {
-  flex: 1;
   min-width: 0;
   font: inherit;
   padding: 0.5rem 0.6rem;
   border: 1px solid var(--border);
   border-radius: 6px;
+}
+
+.task-form input[type="text"] {
+  flex: 1;
 }
 
 .task-form + .form-error {
@@ -205,4 +208,79 @@ h3 {
 
 .tasks-empty {
   color: var(--muted);
+}
+
+.task-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.task:last-child {
+  border-bottom: none;
+}
+
+.task-check {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.task-title {
+  flex: 1;
+  min-width: 8rem;
+}
+
+.task-due {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* Overdue: due date before today and not done. */
+.task-overdue .task-title,
+.task-overdue .task-due,
+.task-overdue-label {
+  color: #b00020;
+}
+
+.task-overdue-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.task-done .task-title {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.task-delete {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .task-form {
+    flex-wrap: wrap;
+  }
+
+  .task-form input[type="text"] {
+    flex-basis: 100%;
+  }
 }

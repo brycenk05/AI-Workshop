@@ -1,5 +1,5 @@
 # Project state
-Last updated: 2026-10-14
+Last updated: 2026-10-15
 
 ## Works
 - The site is live at https://ai-workshop-eight-mauve.vercel.app/.
@@ -19,8 +19,10 @@ Last updated: 2026-10-14
 - NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are set in Vercel (per Brycen). Not set locally in the Claude Code container.
 - Supabase email confirmation is turned off (Brycen's decision), so new accounts can sign in straight away.
 - One database table: public.tasks (id, user_id, title, created_at), Row Level Security on, select and insert only for the row owner. Brycen creates it by pasting the SQL from the slice 2 pull request into the Supabase SQL Editor; there is no migration file in the repo.
+- Slice 3 adds due_date (date) and done (true/false) columns to public.tasks, plus update and delete rules for the row owner. Brycen runs that SQL from the slice 3 pull request in the Supabase SQL Editor.
+- The home page no longer shows Brycen's name or bio; it is just the task list.
 - Claude Code runs at claude.ai/code with the repo already selected.
 
 ## Next session
-- Brycen runs the tasks-table SQL in Supabase, checks slice 2 on the preview link, and merges.
-- Then mark slice 2 DONE in roadmap.md and start slice 3: shared course list.
+- Brycen runs the slice 3 SQL in Supabase, checks due dates, Done, and Delete on the preview link, and merges.
+- Then mark slice 3 DONE in roadmap.md and start slice 4: shared course list.
